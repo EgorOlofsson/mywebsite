@@ -1,74 +1,197 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Мой сайт</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input { margin: 5px; }
-    button { margin: 5px; }
-    ul { padding-left: 0; }
-    li { list-style: none; margin: 3px 0; }
-  </style>
+<meta charset="UTF-8">
+<title>Auth App</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #333;
+  }
+
+  .container {
+    max-width: 400px;
+    margin: 80px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+
+  h2 {
+    text-align: center;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #667eea;
+    color: white;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #5a67d8;
+  }
+
+  #userInfo {
+    margin-top: 15px;
+    text-align: center;
+  }
+
+  ul {
+    padding: 0;
+    margin-top: 15px;
+  }
+
+  li {
+    list-style: none;
+    background: #f1f1f1;
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 6px;
+  }
+</style>
 </head>
+
 <body>
-  <h1>Форма регистрации</h1>
-  <form id="signupForm">
-    <input name="name" placeholder="Имя" required>
-    <input name="email" placeholder="Email" required>
-    <button type="submit">Отправить</button>
-  </form>
-  <h2>Пользователи:</h2>
-  <ul id="userList"></ul>
 
-  <!-- Supabase JS v2 через CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-  <script>
-    // Твои данные Supabase
-    const SUPABASE_URL = "https://rsxwekxpmqcrpbuwcljp.supabase.co/";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzeHdla3hwbXFjcnBidXdjbGpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODcxMjcsImV4cCI6MjA4NzM2MzEyN30.pnXVzQ47RzuRqCNCN1E1jry4JzBR60M3gJ9pJvaPi4M";
+<div class="container">
 
-    // Создаём клиент Supabase (в браузере через CDN)
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <h2>Аккаунт</h2>
 
-    const form = document.getElementById("signupForm");
-    const userList = document.getElementById("userList");
+  <input id="name" placeholder="Имя">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Пароль">
 
-    // Загрузка пользователей из базы
-    async function loadUsers() {
-      const { data, error } = await supabaseClient.from("users").select("*");
-      if (error) {
-        console.error("Ошибка при загрузке:", error);
-        return;
-      }
+  <button id="signupBtn">Регистрация</button>
+  <button id="loginBtn">Вход</button>
+  <button id="logoutBtn">Выход</button>
 
-      userList.innerHTML = "";
-      data.forEach(u => {
-        const li = document.createElement("li");
-        li.textContent = `${u.name} - ${u.email}`;
-        userList.appendChild(li);
-      });
-    }
+  <div id="userInfo">Не авторизован</div>
 
-    // Обработка отправки формы
-    form.addEventListener("submit", async e => {
-      e.preventDefault();
-      const name = form.name.value.trim();
-      const email = form.email.value.trim();
-      if (!name || !email) return;
+  <h3>Пользователи:</h3>
+  <ul id="users"></ul>
 
-      const { error } = await supabaseClient.from("users").insert([{ name, email }]);
-      if (error) {
-        console.error("Ошибка при добавлении:", error);
-        return;
-      }
+</div>
 
-      form.reset();
-      loadUsers();
-    });
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    // Первоначальная загрузка списка пользователей
-    loadUsers();
-  </script>
+<script>
+const SUPABASE_URL = "https://rsxwekxpmqcrpbuwcljp.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzeHdla3hwbXFjcnBidXdjbGpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODcxMjcsImV4cCI6MjA4NzM2MzEyN30.pnXVzQ47RzuRqCNCN1E1jry4JzBR60M3gJ9pJvaPi4M"; // ВСТАВЬ СВОЙ
+
+const { createClient } = supabase;
+const client = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// элементы
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const nameInput = document.getElementById("name");
+const userInfo = document.getElementById("userInfo");
+const usersList = document.getElementById("users");
+
+// РЕГИСТРАЦИЯ
+document.getElementById("signupBtn").onclick = async () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+  const name = nameInput.value.trim();
+
+  if (!email || !password || !name) {
+    alert("Заполни все поля");
+    return;
+  }
+
+  const { data, error } = await client.auth.signUp({
+    email,
+    password
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  // запись в таблицу
+  if (data.user) {
+    await client.from("users").insert([
+      { id: data.user.id, name, email }
+    ]);
+  }
+
+  alert("Регистрация успешна");
+};
+
+// ВХОД
+document.getElementById("loginBtn").onclick = async () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  const { error } = await client.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  loadUser();
+  loadUsers();
+};
+
+// ВЫХОД
+document.getElementById("logoutBtn").onclick = async () => {
+  await client.auth.signOut();
+  userInfo.textContent = "Не авторизован";
+};
+
+// ТЕКУЩИЙ ПОЛЬЗОВАТЕЛЬ
+async function loadUser() {
+  const { data } = await client.auth.getUser();
+
+  if (data.user) {
+    userInfo.innerHTML = "Ты вошёл как: <b>" + data.user.email + "</b>";
+  } else {
+    userInfo.textContent = "Не авторизован";
+  }
+}
+
+// СПИСОК ПОЛЬЗОВАТЕЛЕЙ
+async function loadUsers() {
+  const { data, error } = await client.from("users").select("*");
+
+  if (error) return;
+
+  usersList.innerHTML = "";
+
+  data.forEach(u => {
+    const li = document.createElement("li");
+    li.textContent = u.name + " (" + u.email + ")";
+    usersList.appendChild(li);
+  });
+}
+
+// при загрузке
+loadUser();
+loadUsers();
+
+</script>
+
 </body>
 </html>

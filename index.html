@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Мой сайт</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input { margin: 5px; }
+    button { margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Форма регистрации</h1>
+  <form id="signupForm">
+    <input name="name" placeholder="Имя" required>
+    <input name="email" placeholder="Email" required>
+    <button type="submit">Отправить</button>
+  </form>
+  <h2>Пользователи:</h2>
+  <ul id="userList"></ul>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Вставь свои данные Supabase
+    const SUPABASE_URL = "https://rsxwekxpmqcrpbuwcljp.supabase.co/";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzeHdla3hwbXFjcnBidXdjbGpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODcxMjcsImV4cCI6MjA4NzM2MzEyN30.pnXVzQ47RzuRqCNCN1E1jry4JzBR60M3gJ9pJvaPi4M";
+
+    const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const form = document.getElementById("signupForm");
+    const userList = document.getElementById("userList");
+
+    async function loadUsers() {
+      const { data, error } = await supabase.from("users").select("*");
+      if (error) console.error(error);
+      userList.innerHTML = "";
+      data.forEach(u => {
+        const li = document.createElement("li");
+        li.textContent = `${u.name} - ${u.email}`;
+        userList.appendChild(li);
+      });
+    }
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const name = form.name.value;
+      const email = form.email.value;
+
+      const { error } = await supabase.from("users").insert([{ name, email }]);
+      if (error) console.error(error);
+
+      form.reset();
+      loadUsers();
+    });
+
+    loadUsers();
+  </script>
+</body>
+</html>

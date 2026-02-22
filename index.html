@@ -7,6 +7,8 @@
     body { font-family: sans-serif; padding: 20px; }
     input { margin: 5px; }
     button { margin: 5px; }
+    ul { padding-left: 0; }
+    li { list-style: none; margin: 3px 0; }
   </style>
 </head>
 <body>
@@ -19,21 +21,26 @@
   <h2>Пользователи:</h2>
   <ul id="userList"></ul>
 
-  <!-- Supabase JS v2 -->
+  <!-- Supabase JS v2 через CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
   <script>
-    // Создаём клиент Supabase (v2)
+    // Твои данные Supabase
     const SUPABASE_URL = "https://rsxwekxpmqcrpbuwcljp.supabase.co/";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzeHdla3hwbXFjcnBidXdjbGpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODcxMjcsImV4cCI6MjA4NzM2MzEyN30.pnXVzQ47RzuRqCNCN1E1jry4JzBR60M3gJ9pJvaPi4M";
 
-    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Создаём клиент Supabase (в браузере через CDN)
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const form = document.getElementById("signupForm");
     const userList = document.getElementById("userList");
 
+    // Загрузка пользователей из базы
     async function loadUsers() {
-      const { data, error } = await supabase.from("users").select("*");
-      if (error) return console.error("Ошибка при загрузке:", error);
+      const { data, error } = await supabaseClient.from("users").select("*");
+      if (error) {
+        console.error("Ошибка при загрузке:", error);
+        return;
+      }
 
       userList.innerHTML = "";
       data.forEach(u => {
@@ -43,19 +50,24 @@
       });
     }
 
+    // Обработка отправки формы
     form.addEventListener("submit", async e => {
       e.preventDefault();
       const name = form.name.value.trim();
       const email = form.email.value.trim();
       if (!name || !email) return;
 
-      const { error } = await supabase.from("users").insert([{ name, email }]);
-      if (error) return console.error("Ошибка при добавлении:", error);
+      const { error } = await supabaseClient.from("users").insert([{ name, email }]);
+      if (error) {
+        console.error("Ошибка при добавлении:", error);
+        return;
+      }
 
       form.reset();
       loadUsers();
     });
 
+    // Первоначальная загрузка списка пользователей
     loadUsers();
   </script>
 </body>
